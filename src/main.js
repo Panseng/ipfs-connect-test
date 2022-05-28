@@ -2,6 +2,7 @@ const { create } = require('ipfs-http-client')
 const log4js = require('log4js');
 const { Client } = require('pg');
 const fs = require('fs');
+const chinaTime = require('china-time');
 
 // log4js的输出级别6个: trace, debug, info, warn, error, fatal
 log4js.configure({
@@ -61,18 +62,7 @@ PQ_CLIENT.connect()
 
 
 // 记录 id 基础
-const DATE = new Date();
-let month = DATE.getMonth()+1
-if (month < 10) month = '0' + month;
-let day = DATE.getDate()
-if (day < 10) day = '0' + day;
-let hour = DATE.getHours()
-if (hour < 10) hour = '0' + hour;
-let min = DATE.getMinutes()
-if (min < 10) min = '0' + min;
-let sec = DATE.getSeconds();
-if (sec < 10) sec = '0' + sec;
-const ID_BASE = DATE.getFullYear()+''+month+''+day+''+hour+''+ min + '' + sec
+const ID_BASE = chinaTime('YYYYMMDDHHmmss')
 let id_num = 0;
 
 function main (){
@@ -89,7 +79,7 @@ function interval(){
 
 function traverse(){
     for (let ipfs of IPFS_NODES){
-        checkIPFS(ipfs.host, ipfs.port, new Date().toLocaleString())
+        checkIPFS(ipfs.host, ipfs.port, chinaTime('YYYY-MM-DD HH:mm:ss'))
     }
 }
 

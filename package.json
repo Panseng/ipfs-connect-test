@@ -4,6 +4,7 @@
   "description": "测试 IPFS 节点状态",
   "main": "main.js",
   "dependencies": {
+    "china-time": "^0.12.3",
     "fs": "^0.0.1-security",
     "ipfs-http-client": "^56.0.3",
     "log4js": "^6.5.2",
