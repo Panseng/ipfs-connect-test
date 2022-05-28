@@ -1,0 +1,17 @@
+{
+  "name": "ipfs-connect-test",
+  "version": "1.0.0",
+  "description": "测试 IPFS 节点状态",
+  "main": "main.js",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "ipfs-http-client": "^56.0.3",
+    "log4js": "^6.5.2",
+    "pg": "^8.7.3"
+  },
+  "scripts": {
+    "start": "node ./src/main.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
