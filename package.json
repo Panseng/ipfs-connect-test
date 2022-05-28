@@ -8,6 +8,7 @@
     "fs": "^0.0.1-security",
     "ipfs-http-client": "^56.0.3",
     "log4js": "^6.5.2",
+    "moment": "^2.29.3",
     "pg": "^8.7.3"
   },
   "scripts": {

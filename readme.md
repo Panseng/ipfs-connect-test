@@ -23,3 +23,27 @@ npm run start
 
 ## 输出
 Logs 日志文件 & 数据库
+
+# 时区 & 时间
+
+## china-time
+```nodejs
+const chinaTime = require('china-time');
+
+console.log(chinaTime()); // 2018-02-07T04:38:00.000Z
+console.log(chinaTime().getTime()); // 1517978280000
+console.log(chinaTime('YYYY-MM-DD HH:mm:ss')); // 2018-02-07 13:08:17
+console.log(chinaTime('YY/MM/DD HH:mm')); // 18/02/07 13:08
+console.log(chinaTime('YYYY MM DD')); // 2018 02 07
+```
+
+## moment
+```nodejs
+    const moment = require('moment');
+    logger.info('moment.utc().format()', moment.utc().format())
+    logger.info('moment.utcOffset(8).format()', moment(moment.utc().format()).utcOffset(8).format())
+```
+
+## dayjs
+按官方文档测试，出错
+https://github.com/guisturdy/dayjs-plugin-utc/tree/f37f2ca1a9546df7509722cf2ec1ac09f785b094

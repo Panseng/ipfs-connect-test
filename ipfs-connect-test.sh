@@ -1,4 +1,4 @@
-readonly tag=12345601
+readonly tag=12345602
 
 docker pull docker.isecsp.com/pan_ding_rong/ipfs-connect-test-master:${tag}
 docker stop ipfs-connect-test

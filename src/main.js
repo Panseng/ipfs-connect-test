@@ -2,6 +2,7 @@ const { create } = require('ipfs-http-client')
 const log4js = require('log4js');
 const { Client } = require('pg');
 const fs = require('fs');
+
 const chinaTime = require('china-time');
 
 // log4js的输出级别6个: trace, debug, info, warn, error, fatal
@@ -69,6 +70,7 @@ function main (){
     // checkIPFS(IPFS_NODES[2].host, IPFS_NODES[2].port, getLocalTime(8))
     traverse();
     interval()
+    // timeZoneTest()
 }
 
 main()
@@ -121,4 +123,18 @@ function getLocalTime (i) {
     let offset = d.getTimezoneOffset() * 60000
     let utcTime = len + offset
     return new Date(utcTime + 3600000 * i)
+}
+
+function timeZoneTest() {
+    const moment = require('moment');
+    logger.info('moment.utc().format()', moment.utc().format())
+    logger.info('moment.utcOffset(8).format()', moment(moment.utc().format()).utcOffset(8).format())
+    // const dayjs = require('dayjs');
+    // const dayjsPluginUTC = require('dayjs-plugin-utc');
+    // dayjs.extend(dayjsPluginUTC)
+    // let time = dayjs(new Date().toLocaleString())
+    // logger.info('day.utc().format() ', day.utc().format())
+    // logger.info('day.local().format() ', day.local().format())
+    // // 60 * 8 = 480
+    // logger.info('day.utcOffset(240).format() ', day.utcOffset(480).format())
 }
