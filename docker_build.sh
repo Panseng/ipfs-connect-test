@@ -1,5 +1,5 @@
-readonly tag=test
-readonly imageName=ipfs/ipfs-connect-test
+readonly tag=12345601
+readonly imageName=pan_ding_rong/ipfs-connect-test-master
 docker build -t ${imageName}:${tag} .
 docker tag ${imageName}:${tag} docker.isecsp.com/${imageName}:${tag}
 docker push docker.isecsp.com/${imageName}:${tag}
