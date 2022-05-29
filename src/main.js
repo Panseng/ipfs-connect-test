@@ -12,7 +12,18 @@ log4js.configure({
         //设置控制台输出 （默认日志级别是关闭的（即不会输出日志））
         out: { type: 'console' },
         //所有日志记录，文件类型file   文件最大值maxLogSize 单位byte (B->KB->M) backups:备份的文件个数最大值,最新数据覆盖旧数据
-        allfileLog: { type: 'file', filename: './logs/logs.log', keepFileExt: true, maxLogSize: 1024*1024*100, backups: 30 },
+        allfileLog: { 
+            type: 'file',
+            filename: './logs/logs.log',
+            maxLogSize: 1024*1024*10,
+            backups: 30,
+            // 日志文件按日期（天）切割
+            pattern: "yyyy-MM-dd",
+            // 回滚旧的日志文件时，保证以 .log 结尾 （只有在 alwaysIncludePattern 为 false 生效）
+            keepFileExt: true,
+            // 输出的日志文件名是都始终包含 pattern 日期结尾
+            alwaysIncludePattern: true
+        },
     },
     //不同等级的日志追加到不同的输出位置：appenders: ['out', 'allLog']  categories 作为getLogger方法的键名对应
     categories: {
