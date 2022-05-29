@@ -11,11 +11,13 @@ log4js.configure({
     appenders: {
         //设置控制台输出 （默认日志级别是关闭的（即不会输出日志））
         out: { type: 'console' },
-        //所有日志记录，文件类型file   文件最大值maxLogSize 单位byte (B->KB->M) backups:备份的文件个数最大值,最新数据覆盖旧数据
+        //所有日志记录，文件类型file 
         allfileLog: { 
             type: 'file',
             filename: './logs/logs.log',
+            // 文件最大值maxLogSize 单位byte (B->KB->M) 
             maxLogSize: 1024*1024*10,
+            // backups:备份的文件个数最大值 最新数据覆盖旧数据
             backups: 30,
             // 日志文件按日期（天）切割
             pattern: "yyyy-MM-dd",
@@ -78,16 +80,26 @@ const ID_BASE = chinaTime('YYYYMMDDHHmmss')
 let id_num = 0;
 
 function main (){
-    // checkIPFS(IPFS_NODES[2].host, IPFS_NODES[2].port, getLocalTime(8))
     traverse();
     interval()
+
+    // 用于测试的代码 ------------------------------------------------------------------
+
+    // checkIPFS(IPFS_NODES[2].host, IPFS_NODES[2].port, getLocalTime(8))
+    // 周期
+    // let cycle_time = process.env.CYCLE_TIME
+    // logger.info('环境变量值的类型：', typeof cycle_time)
     // timeZoneTest()
 }
 
 main()
 
 function interval(){
-    setInterval(traverse, 10 * 60 * 1000)
+    // 默认 3 分钟的频率
+    let cycle_time = 3 * 60 * 1000
+    if (process.env.CYCLE_TIME) cycle_time = parseInt(process.env.CYCLE_TIME)
+    logger.info('检测周期：', cycle_time, ' ms')
+    setInterval(traverse, cycle_time)
 }
 
 function traverse(){

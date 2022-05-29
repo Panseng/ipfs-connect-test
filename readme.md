@@ -16,6 +16,8 @@
 
 2. 通过 [ipfs-connect-test](./ipfs-connect-test.sh) 命令在目标服务器允许
 
+> 通过 sh 传入的环境变量，值类型为字符串
+
 ## npm
 ```npm
 npm run start
