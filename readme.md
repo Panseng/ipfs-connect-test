@@ -18,6 +18,14 @@
 
 > 通过 sh 传入的环境变量，值类型为字符串
 
+获取镜像错误
+```
+Step 1/5 : FROM node:16.15.0-slim
+16.15.0-slim: Pulling from library/node
+error parsing HTTP 408 response body: invalid character '<' looking for beginning of value: "<html><body><h1>408 Request Time-out</h1>\nYour browser didn't send a complete request in time.\n</body></html>\n"
+```
+需要手动获取镜像
+
 ## npm
 ```npm
 npm run start

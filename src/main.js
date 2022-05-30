@@ -36,24 +36,10 @@ log4js.configure({
 //如果 log4js.getLogger 中没有指定，默认为default日志的配置项
 const logger = log4js.getLogger();
 
-// @潘丁榕  5个ipfs节点
-// 1、本地：192.168.1.30 api端口：5001 网关：8082
-//                 其中的网关8082通过rpc提供对外的80端口访问：nft-store.frp.isecsp.com
-// 2、期刊网：220.243.137.16 api端口：5001 网关：8082
-// 3、三丰云：111.67.196.49 api端口：5001 网关：8082
-// 4、三丰云：111.67.199.90 api端口：5001 网关：8082
-// 5、小鸟云：103.45.110.138 api端口：5008 网关：8080（只可127.0.0.1访问）
 let path = './config/config.json'
 if (process.env.CONFIG_JSON_PATH) path = process.env.CONFIG_JSON_PATH;
-let IPFS_NODES = [
-    {host: '192.168.1.147', port: 5001},
-    {host: 'nft-store.frp.isecsp.com', port: 80},
-    {host: '192.168.1.30', port: 5001},
-    {host: '220.243.137.16', port: 5001},
-    {host: '111.67.196.49', port: 5001},
-    {host: '111.67.199.90', port: 5001},
-    {host: '103.45.110.138', port: 5008},
-];
+let IPFS_NODES = [];
+let IPFS_NODES_URL = []
 let pg_cfg = {
     user: 'ada',
     host: '192.168.1.143',
@@ -64,8 +50,10 @@ let pg_cfg = {
 try{
     let data = fs.readFileSync(path, 'utf-8');
     data = JSON.parse(data)
-    IPFS_NODES = data.IPFS;
+    if (data.IPFS) IPFS_NODES = data.IPFS;
+    if (data.IPFS_URL) IPFS_NODES_URL = data.IPFS_URL
     pg_cfg = data.PG;
+
     logger.info('读取配置: ', data)
 } catch(e){
     logger.error('读取配置信息出错: ', e)
@@ -106,6 +94,9 @@ function traverse(){
     for (let ipfs of IPFS_NODES){
         checkIPFS(ipfs.host, ipfs.port, chinaTime('YYYY-MM-DD HH:mm:ss'))
     }
+    for (let url of IPFS_NODES_URL) {
+        checkIPFSByURL(url, chinaTime('YYYY-MM-DD HH:mm:ss'))
+    }
 }
 
 async function checkIPFS (host, port, time) {
@@ -121,16 +112,39 @@ async function checkIPFS (host, port, time) {
         const res = await ipfs.add('Hello world!')
         id_num++;
         id = ID_BASE + '-' + id_num + '-' + randNum()
-        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}', '${time}', 'success', '')`;
-        logger.info('IPFS 连接正常：', 'id: ' + id, ', host: ' + host, ', time: ' +time + ', res: ', res, ', sql: ' + sql)
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}:${port}', '${time}', 'success', '')`;
+        logger.info('IPFS 连接正常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', time: ' +time + ', res: ', res, ', sql: ' + sql)
         PQ_CLIENT.query(sql)
     } catch(error) {
         id_num++;
         id = ID_BASE + '-' + id_num + '-' + randNum()
-        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}', '${time}', 'error', '${error}')`;
-        logger.error('IPFS 连接异常：', 'id: ' + id, ', host: ' + host, ', time: ' +time, ', sql: ' + sql + ', error: ', error)
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}:${port}', '${time}', 'error', '${error}')`;
+        logger.error('IPFS 连接异常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', time: ' +time, ', sql: ' + sql + ', error: ', error)
         PQ_CLIENT.query(sql)
         // PQ_CLIENT.query(`insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values (${id}, ${host}, ${time}, 'error', ${error})`)
+    }
+}
+
+async function checkIPFSByURL(url, time){
+    const ipfs = create({
+        url: url,
+        timeout: 10 * 1000
+    })
+    let id = '';
+    let sql = '';
+    try{
+        const res = await ipfs.add('Hello world!')
+        id_num++;
+        id = ID_BASE + '-' + id_num + '-' + randNum()
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${url}', '${time}', 'success', '')`;
+        logger.info('IPFS 连接正常：', ', url: ' + url, ', time: ' +time + ', res: ', res)
+        PQ_CLIENT.query(sql)
+    } catch(error) {
+        id_num++;
+        id = ID_BASE + '-' + id_num + '-' + randNum()
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${url}', '${time}', 'error', '${error}')`;
+        logger.error('IPFS 连接异常：', ', url: ' + url, ', time: ' +time, error)
+        PQ_CLIENT.query(sql)
     }
 }
 
