@@ -109,17 +109,19 @@ async function checkIPFS (host, port, time) {
     let id = '';
     let sql = '';
     try{
-        const res = await ipfs.add('Hello world!')
+        // const res = await ipfs.add('Hello world!')
+        const res = await ipfs.files.stat('/') // 查看根目录的状态
         id_num++;
         id = ID_BASE + '-' + id_num + '-' + randNum()
-        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}:${port}', '${time}', 'success', '')`;
-        logger.info('IPFS 连接正常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', time: ' +time + ', res: ', res, ', sql: ' + sql)
+        logger.info('IPFS 连接正常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', time: ' +time + ', res: ', res)
+        delete res.cid
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}:${port}', '${time}', 'success', '${JSON.stringify(res)}')`;
         PQ_CLIENT.query(sql)
     } catch(error) {
         id_num++;
         id = ID_BASE + '-' + id_num + '-' + randNum()
         sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}:${port}', '${time}', 'error', '${error}')`;
-        logger.error('IPFS 连接异常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', time: ' +time, ', sql: ' + sql + ', error: ', error)
+        logger.error('IPFS 连接异常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', time: ' +time, ', error: ', error)
         PQ_CLIENT.query(sql)
         // PQ_CLIENT.query(`insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values (${id}, ${host}, ${time}, 'error', ${error})`)
     }
@@ -133,11 +135,12 @@ async function checkIPFSByURL(url, time){
     let id = '';
     let sql = '';
     try{
-        const res = await ipfs.add('Hello world!')
+        const res = await ipfs.files.stat('/') // 查看根目录的状态
         id_num++;
         id = ID_BASE + '-' + id_num + '-' + randNum()
-        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${url}', '${time}', 'success', '')`;
         logger.info('IPFS 连接正常：', ', url: ' + url, ', time: ' +time + ', res: ', res)
+        delete res.cid
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${url}', '${time}', 'success', '${JSON.stringify(res)}')`;
         PQ_CLIENT.query(sql)
     } catch(error) {
         id_num++;
