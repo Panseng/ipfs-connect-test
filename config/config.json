@@ -13,5 +13,9 @@
         "database": "ada",
         "password": "pass_2022",
         "port": 5432
-      }
+      },
+    "IPFS_CID": [
+        "QmVhRaa5fP4zDKnUBazixn1KP4Tfj5AU8rEvFybhksMTP1",
+        "QmeM2SuaSDxggi9gkVQUM3VhLMVwk83WNgYJVaCK4fojyn"
+    ]
 }

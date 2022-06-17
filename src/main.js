@@ -39,7 +39,8 @@ const logger = log4js.getLogger();
 let path = './config/config.json'
 if (process.env.CONFIG_JSON_PATH) path = process.env.CONFIG_JSON_PATH;
 let IPFS_NODES = [];
-let IPFS_NODES_URL = []
+let IPFS_NODES_URL = [];
+let IPFS_CID = [];
 let pg_cfg = {
     user: 'ada',
     host: '192.168.1.143',
@@ -52,6 +53,7 @@ try{
     data = JSON.parse(data)
     if (data.IPFS) IPFS_NODES = data.IPFS;
     if (data.IPFS_URL) IPFS_NODES_URL = data.IPFS_URL
+    if (data.IPFS_CID) IPFS_CID = data.IPFS_CID
     pg_cfg = data.PG;
 
     logger.info('读取配置: ', data)
@@ -69,7 +71,8 @@ let id_num = 0;
 
 function main (){
     traverse();
-    interval()
+    interval();
+    pinData();
 
     // 用于测试的代码 ------------------------------------------------------------------
 
@@ -96,6 +99,41 @@ function traverse(){
     }
     for (let url of IPFS_NODES_URL) {
         checkIPFSByURL(url, chinaTime('YYYY-MM-DD HH:mm:ss'))
+    }
+}
+
+function pinData(){
+    for (let ipfs of IPFS_NODES){
+        for (let cid of IPFS_CID){
+            pin(ipfs.host, ipfs.port, chinaTime('YYYY-MM-DD HH:mm:ss'), cid)
+        }
+    }
+}
+
+async function pin (host, port, time, cid){
+    const ipfs = create({
+        host: host,
+        port: port,
+        protocol: 'http',
+        timeout: 20 * 1000 * 60 // pin 的时间需要设置长一些，否则会连接失败
+      });
+    let id = '';
+    let sql = '';
+    try{
+        const res = await ipfs.pin.add(cid)
+        id_num++;
+        id = ID_BASE + '-' + id_num + '-' + randNum()
+        logger.info('IPFS 连接正常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', cid: ' +cid + ', res: ', res)
+        delete res.cid
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}:${port}', '${time}', 'pin-success', '${cid}')`;
+        PQ_CLIENT.query(sql)
+    } catch(error) {
+        id_num++;
+        id = ID_BASE + '-' + id_num + '-' + randNum()
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${host}:${port}', '${time}', 'pin-error', '${cid} - ${error}')`;
+        logger.error('IPFS 连接异常：', 'id: ' + id, ', host: ' + host, ', port: ' + port, ', cid: ' +cid, ', error: ', error)
+        PQ_CLIENT.query(sql)
+        // PQ_CLIENT.query(`insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values (${id}, ${host}, ${time}, 'error', ${error})`)
     }
 }
 

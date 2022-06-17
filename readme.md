@@ -30,6 +30,7 @@ error parsing HTTP 408 response body: invalid character '<' looking for beginnin
 ```npm
 npm run start
 ```
+注意，这里需要 node 版本大于等于 16
 
 ## 输出
 Logs 日志文件 & 数据库
