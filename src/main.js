@@ -2,6 +2,7 @@ const { create } = require('ipfs-http-client')
 const log4js = require('log4js');
 const { Client } = require('pg');
 const fs = require('fs');
+const axios= require('axios');
 
 const chinaTime = require('china-time');
 
@@ -87,19 +88,21 @@ main()
 
 function interval(){
     // 默认 3 分钟的频率
-    let cycle_time = 3 * 60 * 1000
+    let cycle_time = 1 * 60 * 1000
     if (process.env.CYCLE_TIME) cycle_time = parseInt(process.env.CYCLE_TIME)
     logger.info('检测周期：', cycle_time, ' ms')
     setInterval(traverse, cycle_time)
 }
 
-function traverse(){
-    for (let ipfs of IPFS_NODES){
-        checkIPFS(ipfs.host, ipfs.port, chinaTime('YYYY-MM-DD HH:mm:ss'))
-    }
-    for (let url of IPFS_NODES_URL) {
-        checkIPFSByURL(url, chinaTime('YYYY-MM-DD HH:mm:ss'))
-    }
+async function traverse(){
+    // 校验 区块链 连接 情况
+    await BlockUrls();
+    // for (let ipfs of IPFS_NODES){
+    //     checkIPFS(ipfs.host, ipfs.port, chinaTime('YYYY-MM-DD HH:mm:ss'))
+    // }
+    // for (let url of IPFS_NODES_URL) {
+    //     checkIPFSByURL(url, chinaTime('YYYY-MM-DD HH:mm:ss'))
+    // }
 }
 
 function pinData(){
@@ -191,6 +194,49 @@ async function checkIPFSByURL(url, time){
 
 function randNum(){
     return Math.floor(Math.random() * 1000000)
+}
+
+async function BlockUrls(){
+    const BOLCKCHAIN_HGIHESET_BLOCKHASH_URL = [
+        "https://eospush.tokenpocket.pro/v1/chain/get_info", // 请求耗时 0.232 秒
+        "https://api.eosn.io/v1/chain/get_info", // 请求耗时 0.743 秒
+        "https://hapi.eosrio.io/v1/chain/get_info", // 请求耗时 1.003 秒
+        "https://api.eostribe.io/v1/chain/get_info", // 请求耗时 1.31 秒
+        "https://bp.cryptolions.io/v1/chain/get_info",  // 请求耗时 1.334 秒
+        "https://eos.greymass.com/v1/chain/get_info", // 请求耗时 1.812 秒
+        "https://api.eos.wiki/v1/chain/get_info", // 请求耗时 1.934 秒
+        "https://api.eossweden.org/v1/chain/get_info", // 请求耗时 2.143 秒
+        "https://eos.eosphere.io/v1/chain/get_info", // 请求耗时 2.772 秒
+        "http://api.blockpool.com/v1/chain/get_info", // 不可用
+        "https://eosmainnet.more.top/v1/chain/get_info", // 不可用
+        "https://eos-mainnet.eosblocksmith.io:443/v1/chain/get_info", // 不可用
+        "https://publicapi-mainnet.eosauthority.com/v1/chain/get_info", // 不可用
+        "https://eosmainnet.more.top/v1/chain/get_info", // 不可用
+      ]
+    let time = chinaTime('YYYY-MM-DD HH:mm:ss')
+    for (let url of BOLCKCHAIN_HGIHESET_BLOCKHASH_URL){
+        await checkBlockURL(url, time)
+    }
+}
+
+async function checkBlockURL(url, time){
+    let id = '';
+    try{
+        let start = new Date().getTime();
+        const {data} = await axios.get(url, {responseType: 'json'})
+        let times = (new Date().getTime() - start) / 1000
+        logger.info(`请求成功: ${url}，耗时：${times}, ` + data.head_block_id)
+        id_num++;
+        id = ID_BASE + '-' + id_num + '-' + randNum()
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${url}', '${time}', 'block-success', '${times}')`;
+        PQ_CLIENT.query(sql)
+    } catch(e){
+        logger.error(`请求错误: ${url}`)
+        id_num++;
+        id = ID_BASE + '-' + id_num + '-' + randNum()
+        sql = `insert into ipfs_status (id, host_url, connect_time, msg_type, msg) values ('${id}', '${url}', '${time}', 'block-error', '${e}')`;
+        PQ_CLIENT.query(sql)
+    }
 }
 
 // 获取东八区时间
